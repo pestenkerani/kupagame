@@ -1167,40 +1167,78 @@ script.push({
   }
 });
 
-// Scene 12: ending
+// ---- helpers for the time-lapse ending ----
+function hexToRgb(hex){
+  const v = parseInt(hex.replace('#',''),16);
+  return [(v>>16)&255, (v>>8)&255, v&255];
+}
+function lerpColor(hexA, hexB, t){
+  const a=hexToRgb(hexA), b=hexToRgb(hexB);
+  const r=Math.round(lerp(a[0],b[0],t));
+  const g=Math.round(lerp(a[1],b[1],t));
+  const bl=Math.round(lerp(a[2],b[2],t));
+  return 'rgb('+r+','+g+','+bl+')';
+}
+
+// Scene 12: time-lapse ending — 16:00 -> 21:00, gün akşama dönüşüyor
 script.push({
   type:'custom',
   t:0,
+  dur:5,
   enter(){ this.t=0; },
   update(dt){ this.t+=dt; },
   render(){
+    const p = clamp(this.t/this.dur, 0, 1);
+    const topCol = lerpColor('#ff9d78','#150c22', p);
+    const botCol = lerpColor('#ffe0b0','#2a1b3d', p);
     const g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#2a1b3d'); g.addColorStop(1,'#e85d75');
+    g.addColorStop(0, topCol); g.addColorStop(1, botCol);
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    for(let i=0;i<16;i++){
-      const hx = (i*61)%W;
-      const hy = (H - ((this.t*30 + i*45)%(H+40)));
-      drawHeart(hx,hy, 5+ (i%3), 'rgba(255,255,255,0.55)');
+
+    // stars fade in as night falls
+    if(p>0.4){
+      ctx.globalAlpha = (p-0.4)/0.6;
+      for(let i=0;i<30;i++){
+        const sx=(i*83)%W, sy=(i*47)%140;
+        ctx.fillStyle='#fff'; ctx.fillRect(sx,sy,2,2);
+      }
+      ctx.globalAlpha=1;
     }
-    ctx.textAlign='center';
-    ctx.fillStyle='#0d0812';
-    ctx.font='bold 17px monospace';
-    ctx.fillText('Ve o gün, Kupa Kafe\'de', W/2+1, 121);
-    ctx.fillText('bir hikaye başladı.', W/2+1, 147);
-    ctx.fillStyle='#fdf1e0';
-    ctx.fillText('Ve o gün, Kupa Kafe\'de', W/2, 120);
-    ctx.fillText('bir hikaye başladı.', W/2, 146);
-    ctx.font='11px monospace';
-    ctx.fillStyle='#ffcf5c';
-    ctx.fillText('4 Ekim 2025 · Dodo & Çido', W/2, 180);
-    const blink = Math.floor(this.t*2)%2===0;
-    if(blink){
-      ctx.font='10px monospace'; ctx.fillStyle='#fdf1e0';
-      ctx.fillText('Baştan oynamak için A / Enter', W/2, H-30);
+
+    // floating hearts carried over from the cafe moment
+    for(let i=0;i<10;i++){
+      const hx = (i*53)%W;
+      const hy = (H - ((this.t*26 + i*40)%(H+30)));
+      drawHeart(hx,hy, 4+(i%3), 'rgba(255,255,255,0.45)');
+    }
+
+    ctx.fillStyle='rgba(13,8,18,0.6)'; ctx.fillRect(0,0,W,26);
+    ctx.fillStyle='#fdf1e0'; ctx.font='11px monospace'; ctx.textAlign='center';
+    ctx.fillText('Saatler böyle geçti...', W/2, 17);
+
+    const totalMinutes = p*300; // 5 saat = 300 dakika
+    let hh = 16 + Math.floor(totalMinutes/60);
+    let mm = Math.floor(totalMinutes%60);
+    const timeStr = String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+    ctx.font='bold 44px monospace';
+    ctx.fillStyle='#0d0812'; ctx.fillText(timeStr, W/2+2, H/2+12);
+    ctx.fillStyle='#fdf1e0'; ctx.fillText(timeStr, W/2, H/2+10);
+
+    if(p>=1){
+      this._holdT = (this._holdT||0)+1/60;
+      if(this._holdT>0.6){
+        ctx.font='bold 14px monospace';
+        ctx.fillStyle='#ffcf5c';
+        ctx.fillText('21:00 · kalktılar', W/2, H/2+50);
+        if(this._holdT>1.4 && Math.floor(this._holdT*2)%2===0){
+          ctx.font='10px monospace'; ctx.fillStyle='#fdf1e0';
+          ctx.fillText('Baştan oynamak için A / Enter', W/2, H-24);
+        }
+      }
     }
     ctx.textAlign='left';
   },
-  onAction(){ goTo(0); }
+  onAction(){ if((this._holdT||0)>1.4) goTo(0); }
 });
 
 // ================= MAIN LOOP =================
