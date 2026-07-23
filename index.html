@@ -1,0 +1,1222 @@
+
+<style>
+  :root{
+    --bg-deep:#1a1025;
+    --bg-deep2:#241633;
+    --frame:#2e1f3d;
+    --frame-hi:#4a3460;
+    --cream:#fdf1e0;
+    --cream-dim:#c9b8a8;
+    --orange:#ff8b5e;
+    --rose:#e85d75;
+    --gold:#ffcf5c;
+    --teal:#5b8fb0;
+    --shadow:#0d0812;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:
+      radial-gradient(ellipse at 50% -10%, #3a2350 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deep2) 100%);
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    font-family: ui-monospace, "SFMono-Regular", "Courier New", monospace;
+    color:var(--cream);
+    overflow-x:hidden;
+    padding:24px 12px;
+  }
+  #stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    max-width:560px;
+  }
+  #label{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    text-align:center;
+  }
+  #label .cart-title{
+    font-size:13px;
+    letter-spacing:.28em;
+    color:var(--gold);
+    text-transform:uppercase;
+    text-shadow:1px 1px 0 var(--shadow);
+  }
+  #label .cart-sub{
+    font-size:10px;
+    letter-spacing:.15em;
+    color:var(--cream-dim);
+    text-transform:uppercase;
+  }
+  #console{
+    position:relative;
+    width:100%;
+    background:
+      linear-gradient(160deg, var(--frame-hi) 0%, var(--frame) 45%, #24152f 100%);
+    border-radius:22px;
+    padding:16px 16px 20px;
+    box-shadow:
+      0 20px 50px -12px rgba(0,0,0,.7),
+      inset 0 2px 0 rgba(255,255,255,.06),
+      inset 0 -6px 12px rgba(0,0,0,.35);
+  }
+  #screen-bezel{
+    position:relative;
+    background:#0d0812;
+    border-radius:10px;
+    padding:10px;
+    box-shadow:inset 0 0 0 2px #000, inset 0 4px 14px rgba(0,0,0,.8);
+  }
+  #canvas-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio: 512 / 320;
+    border-radius:4px;
+    overflow:hidden;
+    background:#000;
+  }
+  canvas{
+    position:absolute;top:0;left:0;
+    width:100%;height:100%;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    display:block;
+  }
+  #power-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 4px 2px;
+  }
+  #power-dot{
+    display:flex;align-items:center;gap:6px;
+    font-size:9px;letter-spacing:.15em;color:var(--cream-dim);
+    text-transform:uppercase;
+  }
+  #power-dot::before{
+    content:"";
+    width:6px;height:6px;border-radius:50%;
+    background:var(--rose);
+    box-shadow:0 0 6px 1px var(--rose);
+  }
+  #brand{
+    font-size:9px;letter-spacing:.2em;color:var(--cream-dim);
+    text-transform:uppercase;
+  }
+  #controls{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:14px;
+    padding:0 6px;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  #dpad{
+    display:grid;
+    grid-template-columns:repeat(3,34px);
+    grid-template-rows:repeat(3,34px);
+    gap:2px;
+  }
+  .dbtn{
+    background:linear-gradient(160deg,#3a2a4d,#221632);
+    border:none;
+    border-radius:6px;
+    box-shadow:0 3px 0 #150d1e, inset 0 1px 0 rgba(255,255,255,.08);
+    color:var(--cream-dim);
+    font-size:13px;
+    display:flex;align-items:center;justify-content:center;
+    touch-action:none;
+    cursor:pointer;
+  }
+  .dbtn:active{ transform:translateY(2px); box-shadow:0 1px 0 #150d1e; }
+  #d-up{grid-column:2;grid-row:1;}
+  #d-left{grid-column:1;grid-row:2;}
+  #d-mid{grid-column:2;grid-row:2;background:transparent;box-shadow:none;}
+  #d-right{grid-column:3;grid-row:2;}
+  #d-down{grid-column:2;grid-row:3;}
+  #action-cluster{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  #a-btn{
+    width:56px;height:56px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ff9d78, var(--orange) 55%, #c9603b 100%);
+    border:none;
+    box-shadow:0 5px 0 #8a4227, inset 0 2px 3px rgba(255,255,255,.35);
+    color:#3a1608;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.05em;
+    cursor:pointer;
+  }
+  #a-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 #8a4227; }
+  #a-label{ font-size:8px; color:var(--cream-dim); letter-spacing:.2em; text-transform:uppercase;}
+  #hint{
+    text-align:center;
+    font-size:10px;
+    color:var(--cream-dim);
+    letter-spacing:.08em;
+    max-width:480px;
+    line-height:1.6;
+  }
+  #hint b{ color:var(--gold); font-weight:normal; }
+  @media (max-width:420px){
+    #dpad{ grid-template-columns:repeat(3,30px); grid-template-rows:repeat(3,30px);}
+    #a-btn{ width:50px;height:50px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; }
+  }
+</style>
+
+<div id="stage">
+  <div id="label">
+    <div class="cart-title">Kupa Game</div>
+    <div class="cart-sub">Kupa Kafe &middot; 4 Ekim 2025</div>
+  </div>
+
+  <div id="console">
+    <div id="screen-bezel">
+      <div id="canvas-wrap">
+        <canvas id="c" width="512" height="320"></canvas>
+      </div>
+    </div>
+    <div id="power-row">
+      <div id="power-dot">Power</div>
+      <div id="brand">Dikmen Handheld Co.</div>
+    </div>
+
+    <div id="controls">
+      <div id="dpad">
+        <button class="dbtn" id="d-up">▲</button>
+        <button class="dbtn" id="d-left">◀</button>
+        <div class="dbtn" id="d-mid"></div>
+        <button class="dbtn" id="d-right">▶</button>
+        <button class="dbtn" id="d-down">▼</button>
+      </div>
+      <div id="action-cluster">
+        <button id="a-btn">A</button>
+        <div id="a-label">ilerle / etkileşim</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hint">
+    Klavye: <b>ok tuşları</b> hareket, <b>boşluk / enter</b> ilerle &middot; ya da yukarıdaki <b>tuşları</b> kullan.
+    Ekrana tıklamak da diyaloğu ilerletir.
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const W = 512, H = 320, TS = 32;
+
+// ---------- utility ----------
+function rr(x,y,w,h,col){ ctx.fillStyle=col; ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+// ---------- tiny synth blips (no external assets) ----------
+let actx=null;
+function beep(freq, dur, type, vol){
+  try{
+    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type = type||'square';
+    o.frequency.value = freq;
+    g.gain.value = (vol!==undefined?vol:0.05);
+    o.connect(g); g.connect(actx.destination);
+    const t0 = actx.currentTime;
+    g.gain.setValueAtTime(g.gain.value, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }catch(e){}
+}
+function sfxBlip(){ beep(520,0.05,'square',0.04); }
+function sfxStep(){ beep(180,0.03,'square',0.02); }
+function sfxHeart(){ beep(660,0.09,'sine',0.05); setTimeout(()=>beep(880,0.12,'sine',0.05),90); setTimeout(()=>beep(1100,0.16,'sine',0.06),190); }
+function sfxRing(){ beep(1000,0.08,'square',0.05); setTimeout(()=>beep(1000,0.08,'square',0.05),160); }
+
+// ================= PALETTES =================
+const PAL = {
+  dodo:     { hair:'#e0611f', skin:'#e8b98a', shirt:'#3a6ea5', shirt2:'#2c5580', pants:'#22314a' },
+  cido:     { hair:'#e8752e', skin:'#f0c9a0', shirt:'#d6336c', shirt2:'#a82753', pants:'#3d2b56' },
+  canbo:    { hair:'#161616', skin:'#d9a066', shirt:'#4caf50', shirt2:'#357a38', pants:'#2e2e2e' },
+  // 4 Ekim buluşma günü kıyafetleri: Dodo beyaz hoodie + kot, Çido bordo tişört + kot
+  dodoDate: { hair:'#e0611f', skin:'#e8b98a', shirt:'#f3ede2', shirt2:'#d9d0bf', pants:'#3d5a80' },
+  cidoDate: { hair:'#e8752e', skin:'#f0c9a0', shirt:'#7a1f2b', shirt2:'#5c141d', pants:'#3d5a80' }
+};
+
+// ================= SPRITE (chibi, blocky) =================
+// dir: 'down','up','left','right'  frame: 0/1 walk toggle
+function drawPerson(x, y, pal, dir, frame, hairType, name){
+  // x,y = feet-center anchor
+  const bob = frame ? 1 : 0;
+  // shadow
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(x, y+1, 9, 3, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  const legW=5, legH=8;
+  const legY = y - legH;
+  // legs (alternate)
+  rr(x-6, legY - (frame?2:0), legW, legH, pal.pants);
+  rr(x+1, legY - (frame?0:2), legW, legH, pal.pants);
+
+  const bodyW=15, bodyH=13;
+  const bodyY = legY - bodyH + 2;
+  const bodyX = x - bodyW/2;
+  rr(bodyX, bodyY, bodyW, bodyH, pal.shirt);
+  rr(bodyX, bodyY+bodyH-4, bodyW, 4, pal.shirt2);
+
+  // arms
+  rr(bodyX-3, bodyY+2, 3, 9, pal.skin);
+  rr(bodyX+bodyW, bodyY+2, 3, 9, pal.skin);
+
+  const headS=13;
+  const headX = x - headS/2;
+  const headY = bodyY - headS + 2;
+  rr(headX, headY, headS, headS, pal.skin);
+
+  // hair + face by direction
+  if(dir==='down'){
+    rr(headX-1, headY-2, headS+2, 6, pal.hair); // fringe
+    if(hairType==='long'){ rr(headX-3, headY, 3, headS+3, pal.hair); rr(headX+headS, headY, 3, headS+3, pal.hair); }
+    if(hairType==='spike'){ rr(headX+2, headY-5, 3, 4, pal.hair); rr(headX+7, headY-6, 3, 5, pal.hair); }
+    // eyes
+    rr(headX+3, headY+6, 2, 2, '#2a1a12');
+    rr(headX+8, headY+6, 2, 2, '#2a1a12');
+  } else if(dir==='up'){
+    rr(headX-1, headY-2, headS+2, headS+2, pal.hair); // back of head fully covered
+    if(hairType==='long'){ rr(headX-3, headY, 3, headS+5, pal.hair); rr(headX+headS, headY, 3, headS+5, pal.hair); }
+  } else { // left/right
+    const flip = dir==='left';
+    ctx.save();
+    if(flip){ ctx.translate(2*x,0); ctx.scale(-1,1); }
+    rr(headX-1, headY-2, 8, 6, pal.hair);
+    if(hairType==='long'){ rr(headX+headS-2, headY, 3, headS+4, pal.hair); }
+    if(hairType==='spike'){ rr(headX+3, headY-5, 3, 5, pal.hair); }
+    rr(headX+8, headY+6, 2, 2, '#2a1a12');
+    ctx.restore();
+  }
+
+  if(name){
+    const headTop = headY;
+    ctx.font='9px monospace';
+    ctx.textAlign='center';
+    ctx.fillStyle='#0d0812';
+    ctx.fillText(name, x+1, headTop-4+1);
+    ctx.fillStyle='#fdf1e0';
+    ctx.fillText(name, x, headTop-4);
+    ctx.textAlign='left';
+  }
+}
+
+// ================= DIALOGUE ENGINE =================
+let dlg = null; // {lines:[{speaker,text,color}], idx, charShown, lastTick, onDone}
+function startDialogue(lines, onDone){
+  dlg = { lines, idx:0, charShown:0, timer:0, onDone };
+  sfxBlip();
+}
+function dlgFullyShown(){
+  if(!dlg) return true;
+  return dlg.charShown >= dlg.lines[dlg.idx].text.length;
+}
+function advanceDialogue(){
+  if(!dlg) return;
+  if(!dlgFullyShown()){
+    dlg.charShown = dlg.lines[dlg.idx].text.length;
+    return;
+  }
+  dlg.idx++;
+  dlg.charShown = 0;
+  sfxBlip();
+  if(dlg.idx >= dlg.lines.length){
+    const cb = dlg.onDone;
+    dlg = null;
+    if(cb) cb();
+  }
+}
+function updateDialogue(dt){
+  if(!dlg) return;
+  dlg.timer += dt;
+  const speed = 38; // chars per second
+  const targetChars = Math.floor(dlg.timer*speed);
+  dlg.charShown = clamp(targetChars, 0, dlg.lines[dlg.idx].text.length);
+}
+function drawDialogueBox(){
+  if(!dlg) return;
+  const line = dlg.lines[dlg.idx];
+  const bx=18, by=H-92, bw=W-36, bh=76;
+  ctx.fillStyle='rgba(13,8,18,0.92)';
+  ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='#fdf1e0';
+  ctx.lineWidth=2;
+  ctx.strokeRect(bx+2,by+2,bw-4,bh-4);
+  if(line.speaker){
+    ctx.fillStyle = line.color || '#ffcf5c';
+    ctx.font='bold 13px monospace';
+    ctx.fillText(line.speaker, bx+14, by+20);
+  }
+  ctx.fillStyle='#fdf1e0';
+  ctx.font='12px monospace';
+  const shown = line.text.slice(0, dlg.charShown);
+  wrapText(shown, bx+14, by+38, bw-28, 15);
+  if(dlgFullyShown()){
+    const t = performance.now()/300;
+    if(Math.floor(t)%2===0){
+      ctx.fillStyle='#ffcf5c';
+      ctx.beginPath();
+      ctx.moveTo(bx+bw-22, by+bh-16);
+      ctx.lineTo(bx+bw-14, by+bh-16);
+      ctx.lineTo(bx+bw-18, by+bh-9);
+      ctx.fill();
+    }
+  }
+}
+function wrapText(text, x, y, maxWidth, lh){
+  const words = text.split(' ');
+  let line='';
+  let yy=y;
+  for(let n=0;n<words.length;n++){
+    const test = line + words[n] + ' ';
+    if(ctx.measureText(test).width > maxWidth && line !== ''){
+      ctx.fillText(line, x, yy);
+      line = words[n] + ' ';
+      yy += lh;
+    } else {
+      line = test;
+    }
+  }
+  ctx.fillText(line, x, yy);
+}
+
+// ================= CHAT BUBBLE ENGINE (phone scenes) =================
+let chat = null; // {bubbles:[{who,text,side,color}], idx, phase, onDone}
+function startChat(bubbles, onDone){
+  chat = { bubbles, idx:0, revealed:[], onDone, charShown:0, timer:0 };
+  sfxBlip();
+}
+function chatFullyShown(){
+  if(!chat) return true;
+  return chat.charShown >= chat.bubbles[chat.idx].text.length;
+}
+function advanceChat(){
+  if(!chat) return;
+  if(!chatFullyShown()){
+    chat.charShown = chat.bubbles[chat.idx].text.length;
+    return;
+  }
+  chat.revealed.push(chat.bubbles[chat.idx]);
+  chat.idx++;
+  chat.charShown = 0;
+  chat.timer = 0;
+  sfxBlip();
+  if(chat.idx >= chat.bubbles.length){
+    const cb = chat.onDone;
+    chat = null;
+    if(cb) cb();
+  }
+}
+function updateChat(dt){
+  if(!chat) return;
+  chat.timer += dt;
+  const speed = 42;
+  chat.charShown = clamp(Math.floor(chat.timer*speed), 0, chat.bubbles[chat.idx].text.length);
+}
+function drawChatScreen(dateLabel){
+  // phone-like frame
+  rr(0,0,W,H,'#0f1720');
+  rr(0,0,W,34,'#182432');
+  ctx.fillStyle='#8aa6bd'; ctx.font='11px monospace';
+  ctx.fillText(dateLabel||'', 16, 22);
+  ctx.fillStyle='#3a4a5a'; ctx.fillRect(0,34,W,2);
+
+  let y = 50;
+  const all = chat.revealed.slice();
+  if(chat && chat.idx < chat.bubbles.length){
+    all.push(Object.assign({}, chat.bubbles[chat.idx], {partial:true}));
+  }
+  // show last ~5 bubbles, anchored so most recent near bottom
+  const maxShow = 6;
+  const show = all.slice(-maxShow);
+  // compute total height needed then start from bottom
+  ctx.font='12px monospace';
+  const bubbleData = show.map(b=>{
+    const txt = b.partial ? b.text.slice(0, chat.charShown) : b.text;
+    const words = txt.split(' ');
+    let lines=[''], li=0;
+    for(const w of words){
+      const t = lines[li] + w + ' ';
+      if(ctx.measureText(t).width > 210 && lines[li]!==''){ li++; lines[li]=w+' '; }
+      else lines[li]=t;
+    }
+    return {b, lines, txt};
+  });
+  let totalH = 0;
+  bubbleData.forEach(d=> totalH += 20 + d.lines.length*15);
+  y = H - 24 - totalH;
+  if(y<44) y = 44;
+
+  for(const d of bubbleData){
+    const bh = 14 + d.lines.length*15;
+    const bw = Math.max(...d.lines.map(l=>ctx.measureText(l).width)) + 20;
+    const isRight = d.b.side==='right';
+    const bx = isRight ? W-24-bw : 24;
+    ctx.fillStyle = d.b.color || (isRight? '#3a6ea5':'#3a3550');
+    ctx.fillRect(bx, y, bw, bh);
+    ctx.fillStyle='#fdf1e0';
+    let ly = y+16;
+    for(const l of d.lines){ ctx.fillText(l, bx+10, ly); ly+=15; }
+    if(!isRight){
+      ctx.fillStyle='#8aa6bd'; ctx.font='9px monospace';
+      ctx.fillText(d.b.who||'', bx, y-4);
+      ctx.font='12px monospace';
+    }
+    y += bh + 8;
+  }
+}
+
+// ================= MAPS =================
+// legend: . grass  = path  T tree  H home(solid deco)  B building  R roofline  # wall  D door/trigger  C counter  t table  h chair
+const SOLID = new Set(['T','H','B','#','C']);
+
+const MAP_TO_CANBO = {
+  label:'Canbo\'nun Evi',
+  rows:[
+"................",
+".TT..........TT.",
+".HH..........BB.",
+".HH..........BB.",
+"..#..........#D.",
+"================",
+"================",
+"................",
+".T....T....T...T",
+"................"
+  ],
+  start:{x:2*TS+16, y:6*TS+20},
+  startDir:'right',
+  trigger:{col:14,row:4}
+};
+
+const MAP_TO_CAFE = {
+  label:'Kupa Kafe',
+  rows:[
+"................",
+".TT.............",
+".HH.............",
+".HH.......RRRR..",
+"..#.......BBBB..",
+"================",
+"================",
+"....T.......BDB.",
+"................",
+".T.......T.....T"
+  ],
+  start:{x:2*TS+16, y:5*TS+20},
+  startDir:'right',
+  trigger:{col:13,row:7}
+};
+
+function tileColor(ch,cx,cy){
+  switch(ch){
+    case '.': return ((cx+cy)%2===0)?'#6f9e5c':'#7fae68';
+    case '=': return ((cx+cy)%2===0)?'#d9c39a':'#cdb489';
+    case 'T': return '#3f6b3a';
+    case 'H': return '#7a5240';
+    case 'B': return '#a15c43';
+    case 'R': return '#6b4423';
+    case '#': return '#5a3a2c';
+    case 'D': return '#3a2a1c';
+    case 'C': return '#8a6a4a';
+    default:  return '#6f9e5c';
+  }
+}
+function drawMap(map, camX, camY){
+  const rows = map.rows;
+  for(let r=0;r<rows.length;r++){
+    for(let c=0;c<rows[r].length;c++){
+      const ch = rows[r][c];
+      const x = c*TS - camX, y = r*TS - camY;
+      if(x< -TS||y<-TS||x>W||y>H) continue;
+      rr(x,y,TS,TS, tileColor(ch,c,r));
+      if(ch==='T'){
+        // little canopy circle for tree charm
+        ctx.fillStyle='#2f5a2a';
+        ctx.beginPath(); ctx.arc(x+TS/2,y+TS/2-4,10,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#5a3a22';
+        rr(x+TS/2-2,y+TS/2+4,4,10,'#5a3a22');
+      }
+      if(ch==='D'){
+        ctx.strokeStyle='#ffcf5c'; ctx.lineWidth=2;
+        ctx.strokeRect(x+3,y+3,TS-6,TS-6);
+      }
+    }
+  }
+  // destination label
+  if(map.label){
+    ctx.font='bold 11px monospace';
+    ctx.fillStyle='#0d0812';
+    const lx = map.trigger.col*TS - camX - 20, ly = (map.trigger.row-1)*TS - camY - 6;
+    ctx.fillText(map.label, lx+1, ly+1);
+    ctx.fillStyle='#ffcf5c';
+    ctx.fillText(map.label, lx, ly);
+  }
+}
+function tileAt(map,px,py){
+  const c = Math.floor(px/TS), r = Math.floor(py/TS);
+  const row = map.rows[r];
+  if(!row) return '#';
+  return row[c] || '.';
+}
+function isSolid(ch){ return SOLID.has(ch); }
+
+// ================= INPUT =================
+const keys = {};
+window.addEventListener('keydown', e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  keys[e.key]=true;
+  if((e.key===' '||e.key==='Enter') && !e.repeat) pressAction();
+});
+window.addEventListener('keyup', e=>{ keys[e.key]=false; });
+
+function bindHold(el, onDown, onUp){
+  el.addEventListener('pointerdown', e=>{ e.preventDefault(); onDown(); });
+  el.addEventListener('pointerup', e=>{ onUp&&onUp(); });
+  el.addEventListener('pointerleave', e=>{ onUp&&onUp(); });
+  el.addEventListener('pointercancel', e=>{ onUp&&onUp(); });
+}
+const touchDir = {up:false,down:false,left:false,right:false};
+bindHold(document.getElementById('d-up'), ()=>touchDir.up=true, ()=>touchDir.up=false);
+bindHold(document.getElementById('d-down'), ()=>touchDir.down=true, ()=>touchDir.down=false);
+bindHold(document.getElementById('d-left'), ()=>touchDir.left=true, ()=>touchDir.left=false);
+bindHold(document.getElementById('d-right'), ()=>touchDir.right=true, ()=>touchDir.right=false);
+document.getElementById('a-btn').addEventListener('pointerdown', e=>{ e.preventDefault(); pressAction(); });
+canvas.addEventListener('pointerdown', ()=>{ pressAction(); });
+
+let __lastPress = 0;
+function pressAction(){
+  const now = performance.now();
+  if(now - __lastPress < 120) return; // debounce duplicate touch/mouse events on some mobile webviews
+  __lastPress = now;
+  if(actx && actx.state==='suspended') actx.resume();
+  if(dlg){ advanceDialogue(); return; }
+  if(chat){ advanceChat(); return; }
+  if(current && current.onAction) current.onAction();
+}
+
+// ================= GAME STATE / SCRIPT =================
+let stepIndex = -1;
+let current = null;
+let script = [];
+
+function goTo(i){
+  stepIndex = i;
+  current = script[stepIndex];
+  if(current.enter) current.enter();
+}
+function nextStep(){ goTo(stepIndex+1); }
+
+// ---- generic "walk" scene factory ----
+function makeWalkStep(map, caption, arriveCaption, onArrive, personPal, hairType, personName){
+  return {
+    type:'walk',
+    map, caption, arriveCaption, onArrive, personPal, hairType, personName,
+    player:null, arrived:false, arriveTimer:0,
+    enter(){
+      this.player = { x:map.start.x, y:map.start.y, dir:map.startDir||'down', frame:0, animT:0, moving:false };
+      this.arrived=false; this.arriveTimer=0;
+    },
+    update(dt){
+      if(this.arrived){
+        this.arriveTimer += dt;
+        if(this.arriveTimer>0.9){ this.onArrive && this.onArrive(); }
+        return;
+      }
+      const p = this.player;
+      let dx=0, dy=0;
+      const left = keys['ArrowLeft']||touchDir.left;
+      const right = keys['ArrowRight']||touchDir.right;
+      const up = keys['ArrowUp']||touchDir.up;
+      const down = keys['ArrowDown']||touchDir.down;
+      if(left) dx-=1; if(right) dx+=1; if(up) dy-=1; if(down) dy+=1;
+      const moving = dx!==0||dy!==0;
+      p.moving = moving;
+      if(moving){
+        const len = Math.hypot(dx,dy);
+        dx/=len; dy/=len;
+        if(Math.abs(dx)>Math.abs(dy)) p.dir = dx>0?'right':'left';
+        else p.dir = dy>0?'down':'up';
+        const speed = 78;
+        const nx = p.x + dx*speed*dt;
+        const ny = p.y + dy*speed*dt;
+        if(!isSolid(tileAt(this.map, nx, p.y-4))) p.x = nx;
+        if(!isSolid(tileAt(this.map, p.x, ny-4))) p.y = ny;
+        p.animT += dt;
+        if(p.animT>0.18){ p.animT=0; p.frame = p.frame?0:1; sfxStep(); }
+      }
+      const trg = this.map.trigger;
+      const dist = Math.hypot(p.x-(trg.col*TS+TS/2), p.y-(trg.row*TS+TS/2));
+      if(dist < 22){ this.arrived = true; }
+    },
+    render(){
+      const camX = 0, camY = 0;
+      drawMap(this.map, camX, camY);
+      drawPerson(this.player.x, this.player.y, this.personPal, this.player.dir, this.player.frame, this.hairType, this.personName);
+      // caption bar
+      const cap = this.arrived ? this.arriveCaption : this.caption;
+      if(cap){
+        ctx.fillStyle='rgba(13,8,18,0.75)';
+        ctx.fillRect(0,0,W,26);
+        ctx.fillStyle='#fdf1e0';
+        ctx.font='11px monospace';
+        ctx.fillText(cap, 12, 17);
+      }
+    }
+  };
+}
+
+// ---- title screen ----
+const titleStep = {
+  type:'title',
+  t:0,
+  enter(){ this.t=0; },
+  update(dt){ this.t+=dt; },
+  render(){
+    // dusk sky gradient
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#2a1b3d'); g.addColorStop(0.55,'#5a3556'); g.addColorStop(1,'#e07850');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    // stars
+    for(let i=0;i<40;i++){
+      const sx = (i*97)%W, sy=(i*53)%140;
+      const tw = (Math.sin(this.t*2+i)+1)/2;
+      ctx.globalAlpha = 0.3+tw*0.5;
+      ctx.fillStyle='#fff';
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+    ctx.globalAlpha=1;
+    // ground silhouette
+    rr(0,H-70,W,70,'#241522');
+    for(let x=0;x<W;x+=40){ rr(x+10,H-90,10,20,'#2f1c2c'); }
+
+    // pixel-art hand-drawn title logo (not a font)
+    drawTitleLogo(W/2, 118, this.t);
+
+    ctx.font='11px monospace';
+    ctx.fillStyle='#fdf1e0';
+    const blink = Math.floor(this.t*2)%2===0;
+    if(blink){
+      ctx.textAlign='center';
+      ctx.fillText('BAŞLAMAK İÇİN DOKUN / A / ENTER', W/2, H-40);
+      ctx.textAlign='left';
+    }
+    // floating hearts
+    for(let i=0;i<5;i++){
+      const hx = 60+i*90 + Math.sin(this.t+i)*10;
+      const hy = 210 - ((this.t*20+i*40)%160);
+      drawHeart(hx,hy, 6, 'rgba(232,93,117,'+ (0.5) +')');
+    }
+  },
+  onAction(){ nextStep(); }
+};
+
+function drawHeart(x,y,s,col){
+  ctx.fillStyle=col;
+  ctx.beginPath();
+  ctx.moveTo(x,y+s*0.3);
+  ctx.bezierCurveTo(x, y, x-s, y, x-s, y+s*0.3);
+  ctx.bezierCurveTo(x-s, y+s*0.8, x, y+s*1.1, x, y+s*1.4);
+  ctx.bezierCurveTo(x, y+s*1.1, x+s, y+s*0.8, x+s, y+s*0.3);
+  ctx.bezierCurveTo(x+s, y, x, y, x, y+s*0.3);
+  ctx.fill();
+}
+
+// simple blocky pixel logo built from rectangles spelling "DODO & ÇİDO" style badge
+function drawTitleLogo(cx, cy, t){
+  ctx.save();
+  ctx.translate(cx, cy + Math.sin(t*1.5)*2);
+  ctx.font='bold 30px monospace';
+  ctx.textAlign='center';
+  ctx.lineWidth=6;
+  ctx.strokeStyle='#0d0812';
+  ctx.strokeText('KUPA GAME', 0, 0);
+  ctx.fillStyle='#ffcf5c';
+  ctx.fillText('KUPA GAME', 0, 0);
+  ctx.textAlign='left';
+  ctx.restore();
+}
+
+// ---- room background helper (for dialogue-only scenes) ----
+// Room scenes reserve the bottom band for the dialogue box, so the floor/characters
+// sit higher up (ROOM_FLOOR_Y) than a "natural" full-height room would place them.
+const ROOM_FLOOR_Y = H-140;
+function drawRoomBG(variant){
+  rr(0,0,W,H, variant==='canbo' ? '#2a2418' : '#241b2e');
+  // wall
+  rr(0,0,W,ROOM_FLOOR_Y, variant==='canbo' ? '#3a3222':'#2f2440');
+  // floor
+  rr(0,ROOM_FLOOR_Y,W,H-ROOM_FLOOR_Y, variant==='canbo' ? '#5a4a30':'#4a3a52');
+  // window
+  rr(40,20,90,70,'#0d0812');
+  rr(44,24,82,62, variant==='canbo' ? '#7fae68':'#5b8fb0');
+  ctx.strokeStyle='#0d0812'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(85,24); ctx.lineTo(85,86); ctx.moveTo(44,55); ctx.lineTo(126,55); ctx.stroke();
+  // rug / TV for canbo variant
+  if(variant==='canbo'){
+    rr(W-140,ROOM_FLOOR_Y+10,100,70,'#161616');
+    rr(W-134,ROOM_FLOOR_Y+16,88,54,'#274b6b');
+    ctx.fillStyle='#7fae68'; ctx.font='10px monospace'; ctx.fillText('FENERBAHÇE', W-128, ROOM_FLOOR_Y+45);
+  } else {
+    rr(W/2-60,ROOM_FLOOR_Y+30,120,14,'#7a4a55');
+  }
+}
+
+// draw a little phone with message shake
+function drawPhone(x,y,shake){
+  const sx = shake? Math.sin(performance.now()/40)*2 : 0;
+  rr(x+sx-14,y-24,28,48,'#111');
+  rr(x+sx-11,y-20,22,38,'#cfe8ff');
+}
+
+// ================= BUILD SCRIPT =================
+
+script.push(titleStep);
+
+// Scene 1: Canbo asks Çido if she's single
+script.push({
+  type:'custom',
+  enter(){ this._d=false; },
+  update(dt){},
+  render(){
+    drawRoomBG('cido');
+    ctx.fillStyle='rgba(13,8,18,0.7)'; ctx.fillRect(0,0,W,22);
+    ctx.fillStyle='#ffcf5c'; ctx.font='11px monospace'; ctx.fillText('Atakule civarında...', 12,15);
+    drawPerson(W/2-40, ROOM_FLOOR_Y+34, PAL.cido, 'down', 0, 'long', 'Çido');
+    drawPerson(W/2+40, ROOM_FLOOR_Y+34, PAL.canbo, 'down', 0, 'short', 'Canbo');
+    if(!this._d){
+      this._d=true;
+      startDialogue([
+        {speaker:'Canbo', text:'Senin sevgilin falan yok değil mi? Bir tanıdığım var, çok iyi çocuktur.', color:'#4caf50'},
+        {speaker:'Çido', text:'Yok yok, kimmiş?', color:'#e85d75'},
+        {speaker:'Canbo', text:'Dodo diyorlar, arkadaşımdır.', color:'#4caf50'}
+      ], ()=>nextStep());
+    }
+  }
+});
+
+// Scene 2: Dodo's room - Canbo texts
+script.push({
+  type:'custom',
+  enter(){ this._d=false; },
+  update(dt){},
+  render(){
+    drawRoomBG('dodo');
+    drawPerson(W/2, ROOM_FLOOR_Y+34, PAL.dodo, 'down', 0, 'spike', 'Dodo');
+    drawPhone(W/2+40, ROOM_FLOOR_Y-40, true);
+    if(!this._d){
+      this._d=true;
+      startDialogue([
+        {speaker:'Canbo (mesaj)', text:'Dodo sana kız buldum, haftaya date\'e çık!', color:'#4caf50'},
+        {speaker:'Dodo (mesaj)', text:'güzel', color:'#5b8fb0'}
+      ], ()=>nextStep());
+    }
+  }
+});
+
+// Scene 3: Canbo calls Dodo
+script.push({
+  type:'custom',
+  enter(){ this._d=false; this._t=0; },
+  update(dt){ this._t+=dt; },
+  render(){
+    drawRoomBG('dodo');
+    drawPerson(W/2, ROOM_FLOOR_Y+34, PAL.dodo, 'down', 0, 'spike', 'Dodo');
+    drawPhone(W/2+40, ROOM_FLOOR_Y-40, true);
+    ctx.fillStyle='#ffcf5c'; ctx.font='16px monospace'; ctx.fillText('☎', W/2+34, ROOM_FLOOR_Y-46);
+    if(!this._d){
+      this._d=true; sfxRing();
+      startDialogue([
+        {speaker:'Canbo', text:'Akşam bizde Fenerbahçe maçı var, gel izleyelim!', color:'#4caf50'},
+        {speaker:'Dodo', text:'Tamam, geliyorum.', color:'#5b8fb0'}
+      ], ()=>nextStep());
+    }
+  }
+});
+
+// Scene 4: walk to Canbo's house
+script.push(makeWalkStep(
+  MAP_TO_CANBO,
+  'Dodo, Canbo\'nun evine doğru yürüyor... (oklarla hareket et)',
+  'Kapıya vardı...',
+  ()=>nextStep(),
+  PAL.dodo, 'spike', 'Dodo'
+));
+
+// Scene 5: Canbo runs home from Çido's side (comedic cutscene)
+script.push({
+  type:'custom',
+  enter(){
+    this.t=0; this.dur=2.4;
+    this.x0=40; this.y0=200; this.x1=460; this.y1=200;
+  },
+  update(dt){ this.t += dt; if(this.t>=this.dur+0.6){ nextStep(); } },
+  render(){
+    rr(0,0,W,H,'#7fae68');
+    for(let x=0;x<W;x+=32){ rr(x,H-40,32,40, (x/32)%2===0?'#d9c39a':'#cdb489'); }
+    ctx.fillStyle='rgba(13,8,18,0.75)'; ctx.fillRect(0,0,W,26);
+    ctx.fillStyle='#ffcf5c'; ctx.font='11px monospace';
+    ctx.fillText('Bu arada Çido\'nun yanından ayrılan Canbo...', 12, 17);
+
+    const p = clamp(this.t/this.dur, 0, 1);
+    const ease = p; // linear sprint
+    const x = lerp(this.x0, this.x1, ease);
+    const y = H-70;
+    const frame = Math.floor(this.t*14)%2;
+    // speed lines
+    ctx.strokeStyle='rgba(255,255,255,0.5)';
+    for(let i=0;i<4;i++){
+      ctx.beginPath();
+      ctx.moveTo(x-24-i*10, y-20-i*4);
+      ctx.lineTo(x-40-i*10, y-20-i*4);
+      ctx.stroke();
+    }
+    drawPerson(x, y, PAL.canbo, 'right', frame, 'short', 'Canbo');
+    if(p>=1){
+      ctx.font='bold 16px monospace';
+      ctx.fillStyle='#ffcf5c'; ctx.textAlign='center';
+      ctx.fillText('KOŞUYOR!!! 💨', W/2, 60);
+      ctx.textAlign='left';
+    }
+  }
+});
+
+// Scene 6: Canbo's house - instagram reveal
+script.push({
+  type:'custom',
+  enter(){ this._d=false; this._phase=0; },
+  update(dt){},
+  render(){
+    drawRoomBG('canbo');
+    drawPerson(W/2-95, ROOM_FLOOR_Y+34, PAL.canbo, 'right', 0, 'short', 'Canbo');
+    drawPerson(W/2+95, ROOM_FLOOR_Y+34, PAL.dodo, 'left', 0, 'spike', 'Dodo');
+    if(this._phase>=1){
+      // phone card
+      const px=W/2-70, py=90, pw=140, ph=140;
+      rr(px,py,pw,ph,'#111');
+      rr(px+6,py+6,pw-12,ph-12,'#fdf1e0');
+      ctx.fillStyle='#e85d75';
+      ctx.beginPath(); ctx.arc(px+pw/2, py+40, 22, 0, Math.PI*2); ctx.fill();
+      drawHeart(px+pw/2, py+36, 8, '#fff');
+      ctx.fillStyle='#241522'; ctx.font='bold 11px monospace'; ctx.textAlign='center';
+      ctx.fillText('çido', px+pw/2, py+80);
+      ctx.font='9px monospace'; ctx.fillStyle='#8a6a4a';
+      ctx.fillText('Ankara, Türkiye', px+pw/2, py+94);
+      ctx.textAlign='left';
+    }
+    if(!this._d){
+      this._d=true;
+      startDialogue([
+        {speaker:'Canbo', text:'Bak, kız bu. Instagram\'ı bu.', color:'#4caf50'},
+        {speaker:'Dodo', text:'...', color:'#5b8fb0'}
+      ], ()=>{
+        this._phase=1;
+        startDialogue([
+          {speaker:'Dodo', text:'Beğendim valla. 😍', color:'#5b8fb0'}
+        ], ()=>nextStep());
+      });
+    }
+  }
+});
+
+// Scene 7: time skip montage
+script.push({
+  type:'custom',
+  enter(){ this._d=false; this.t=0; },
+  update(dt){ this.t+=dt; },
+  render(){
+    rr(0,0,W,H,'#1a1025');
+    ctx.fillStyle='#ffcf5c'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+    ctx.fillText('Günler geçti...', W/2, 60);
+    ctx.textAlign='left';
+    // calendar pages flipping
+    for(let i=0;i<5;i++){
+      const x = 60+i*80;
+      const flip = Math.sin(this.t*2+i)*0.3;
+      rr(x,100,54,64,'#fdf1e0');
+      ctx.fillStyle='#e85d75'; rr(x,100,54,14,'#e85d75');
+      ctx.fillStyle='#241522'; ctx.font='16px monospace'; ctx.textAlign='center';
+      ctx.fillText(String(i+1), x+27, 138);
+      ctx.textAlign='left';
+    }
+    if(!this._d){
+      this._d=true;
+      startDialogue([
+        {speaker:'Canbo', text:'(Dodo\'ya) Hadi ya, buluşsanıza artık!', color:'#4caf50'},
+        {speaker:'Canbo', text:'(Çido\'ya) Ne bekliyorsun, mesaj at hadi!', color:'#4caf50'},
+        {speaker:null, text:'İkisi de Canbo\'nun ısrarına dayanamadı ve numaralar el değiştirdi.', color:'#fdf1e0'}
+      ], ()=>nextStep());
+    }
+  }
+});
+
+// Scene 8: texting - 3 Ekim 2025
+script.push({
+  type:'custom',
+  enter(){ this._d=false; },
+  update(dt){ updateChat(1/60); },
+  render(){
+    if(!this._d){
+      this._d=true;
+      startChat([
+        {who:'Dodo', text:'Selam, ben Dodo :)', side:'right', color:'#3a6ea5'},
+        {who:'Çido', text:'Selam!', side:'left', color:'#a82753'},
+        {who:'Dodo', text:'Yarın müsait misin, bir kahve içelim mi?', side:'right', color:'#3a6ea5'},
+        {who:'Çido', text:'Olur, saat 16:00 nasıl?', side:'left', color:'#a82753'},
+        {who:'Dodo', text:'Kupa Kafe\'de buluşalım o zaman, yarın 16:00 👍', side:'right', color:'#3a6ea5'},
+        {who:'Çido', text:'Tamamdır, orada görüşürüz 🙂', side:'left', color:'#a82753'}
+      ], ()=>nextStep());
+    }
+    drawChatScreen('3 Ekim 2025 · WhatsApp');
+  }
+});
+
+// Scene 9: date card
+script.push({
+  type:'custom',
+  enter(){ this.t=0; },
+  update(dt){ this.t+=dt; if(this.t>1.8) nextStep(); },
+  render(){
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#ff9770'); g.addColorStop(1,'#e85d75');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.textAlign='center';
+    ctx.fillStyle='#fdf1e0'; ctx.font='bold 22px monospace';
+    ctx.fillText('4 Ekim 2025', W/2, H/2-10);
+    ctx.font='13px monospace';
+    ctx.fillText('Saat 16:00 · Kupa Kafe', W/2, H/2+18);
+    ctx.textAlign='left';
+  }
+});
+
+// Scene 10: walk to cafe (final walk)
+script.push(makeWalkStep(
+  MAP_TO_CAFE,
+  'Dodo, Kupa Kafe\'ye doğru yürüyor... hava sıcak.',
+  'Kafeye vardı...',
+  ()=>nextStep(),
+  PAL.dodoDate, 'spike', 'Dodo'
+));
+
+// Scene 11: cafe scene (multi-phase custom)
+script.push({
+  type:'custom',
+  enter(){
+    this.phase='enter_early'; // enter_early -> to_counter -> got_water -> to_table -> cido_walkin -> dialogue -> done
+    this.player = {x:100,y:230,dir:'down',frame:0,animT:0};
+    this.counter = {x:200,y:120};
+    this.table = {x:340,y:200};
+    this.cido = {x:470,y:230,dir:'left',frame:0,animT:0,active:false};
+    this.hasWater = false;
+    this.msgTimer=0;
+    this._introDone=false;
+  },
+  onAction(){
+    if(this.phase==='to_counter'){
+      const d = Math.hypot(this.player.x-this.counter.x, this.player.y-this.counter.y);
+      if(d<34 && !this.hasWater){
+        this.hasWater = true;
+        sfxBlip();
+        startDialogue([
+          {speaker:null, text:'Dodo iki şişe su aldı. Biri kendine, biri Çido için.', color:'#fdf1e0'}
+        ], ()=>{ this.phase='to_table'; });
+      }
+    }
+  },
+  update(dt){
+    if(this.phase==='enter_early' && !this._introDone){
+      this._introDone=true;
+      startDialogue([
+        {speaker:null, text:'Dodo, Çido\'dan 10 dakika önce vardı. Hava çok sıcaktı, susamıştı.', color:'#fdf1e0'}
+      ], ()=>{ this.phase='to_counter'; });
+      return;
+    }
+    if(this.phase==='to_counter' || this.phase==='to_table'){
+      const p=this.player;
+      let dx=0,dy=0;
+      if(keys['ArrowLeft']||touchDir.left) dx-=1;
+      if(keys['ArrowRight']||touchDir.right) dx+=1;
+      if(keys['ArrowUp']||touchDir.up) dy-=1;
+      if(keys['ArrowDown']||touchDir.down) dy+=1;
+      if(dx||dy){
+        const len=Math.hypot(dx,dy); dx/=len; dy/=len;
+        if(Math.abs(dx)>Math.abs(dy)) p.dir = dx>0?'right':'left'; else p.dir = dy>0?'down':'up';
+        p.x = clamp(p.x+dx*70*dt, 24, W-24);
+        p.y = clamp(p.y+dy*70*dt, 60, H-40);
+        p.animT+=dt; if(p.animT>0.18){p.animT=0;p.frame=p.frame?0:1; sfxStep();}
+      }
+      if(this.phase==='to_table'){
+        const d = Math.hypot(p.x-this.table.x, p.y-this.table.y);
+        if(d<26){ this.phase='sit_wait'; this.msgTimer=0; }
+      }
+    } else if(this.phase==='sit_wait'){
+      this.msgTimer += dt;
+      if(this.msgTimer>0.7){ this.phase='cido_walkin'; this.cido.active=true; }
+    } else if(this.phase==='cido_walkin'){
+      const c=this.cido;
+      const tx = this.table.x+26, ty=this.table.y;
+      const d = Math.hypot(c.x-tx, c.y-ty);
+      if(d>4){
+        const dx=(tx-c.x), dy=(ty-c.y); const len=Math.hypot(dx,dy);
+        c.x += dx/len*60*dt; c.y += dy/len*60*dt;
+        c.dir='left';
+        c.animT+=dt; if(c.animT>0.18){c.animT=0;c.frame=c.frame?0:1;}
+      } else {
+        this.phase='dialogue1';
+        startDialogue([
+          {speaker:'Çido', text:'Merhaba!', color:'#e85d75'},
+          {speaker:'Dodo', text:'Merhaba, hoş geldin.', color:'#5b8fb0'}
+        ], ()=>{ this.phase='water_bit'; this.msgTimer=0; });
+      }
+    } else if(this.phase==='water_bit'){
+      this.msgTimer+=dt;
+      if(this.msgTimer>0.5){
+        this.phase='dialogue2';
+        startDialogue([
+          {speaker:null, text:'Çido susamıştı, sormadan suyu aldı ve içti.', color:'#fdf1e0'},
+          {speaker:'Çido', text:'Bunu... bana mı almıştın?', color:'#e85d75'},
+          {speaker:'Dodo', text:'Evet, sana almıştım.', color:'#5b8fb0'}
+        ], ()=>{ this.phase='laugh'; this.msgTimer=0; sfxHeart(); });
+      }
+    } else if(this.phase==='laugh'){
+      this.msgTimer+=dt;
+      if(this.msgTimer>1.6){ nextStep(); }
+    }
+  },
+  render(){
+    // cafe interior
+    rr(0,0,W,H,'#3a2a20');
+    rr(0,0,W,50,'#2a1d16');
+    rr(0,H-30,W,30,'#241611');
+    // counter
+    rr(this.counter.x-40, this.counter.y-16, 80, 40, '#6b4a34');
+    rr(this.counter.x-40, this.counter.y-24, 80, 10, '#8a6a4a');
+    ctx.font='9px monospace'; ctx.fillStyle='#fdf1e0';
+    ctx.fillText('TEZGAH', this.counter.x-18, this.counter.y-28);
+    if(!this.hasWater){
+      ctx.fillStyle='#7fd4e8';
+      rr(this.counter.x-8,this.counter.y-10,6,14,'#7fd4e8');
+      rr(this.counter.x+4,this.counter.y-10,6,14,'#7fd4e8');
+    }
+    // table + chairs
+    rr(this.table.x-20, this.table.y-8, 40, 34, '#5a3d2b');
+    rr(this.table.x-26, this.table.y+18, 14,14,'#3a2a1c');
+    rr(this.table.x+12, this.table.y+18, 14,14,'#3a2a1c');
+    if(this.hasWater && (this.phase==='sit_wait'||this.phase==='cido_walkin'||this.phase==='dialogue1'||this.phase==='water_bit'||this.phase==='dialogue2'||this.phase==='laugh')){
+      rr(this.table.x-10,this.table.y-2,6,10,'#7fd4e8');
+      rr(this.table.x+4,this.table.y-2,6,10,'#7fd4e8');
+    }
+    // door
+    rr(W-50,50,36,80,'#241611');
+    ctx.font='9px monospace'; ctx.fillStyle='#ffcf5c'; ctx.fillText('KAPI', W-46,46);
+
+    drawPerson(this.player.x, this.player.y, PAL.dodoDate, this.player.dir, this.player.frame, 'spike', 'Dodo');
+    if(this.cido.active){
+      drawPerson(this.cido.x, this.cido.y, PAL.cidoDate, this.cido.dir, this.cido.frame, 'long', 'Çido');
+    }
+
+    if(this.phase==='laugh'){
+      for(let i=0;i<3;i++){
+        drawHeart(this.table.x+ i*14-14, this.table.y-20-((this.msgTimer*40+i*20)%60), 6, 'rgba(232,93,117,0.8)');
+      }
+    }
+
+    // caption / prompt
+    ctx.fillStyle='rgba(13,8,18,0.7)'; ctx.fillRect(0,0,W,22);
+    ctx.fillStyle='#fdf1e0'; ctx.font='11px monospace';
+    let cap='';
+    if(this.phase==='to_counter') cap='Tezgaha git ve A / boşluk ile su al';
+    else if(this.phase==='to_table') cap='Şimdi masaya git ve otur';
+    cap && ctx.fillText(cap,12,15);
+  }
+});
+
+// Scene 12: ending
+script.push({
+  type:'custom',
+  t:0,
+  enter(){ this.t=0; },
+  update(dt){ this.t+=dt; },
+  render(){
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#2a1b3d'); g.addColorStop(1,'#e85d75');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    for(let i=0;i<16;i++){
+      const hx = (i*61)%W;
+      const hy = (H - ((this.t*30 + i*45)%(H+40)));
+      drawHeart(hx,hy, 5+ (i%3), 'rgba(255,255,255,0.55)');
+    }
+    ctx.textAlign='center';
+    ctx.fillStyle='#0d0812';
+    ctx.font='bold 17px monospace';
+    ctx.fillText('Ve o gün, Kupa Kafe\'de', W/2+1, 121);
+    ctx.fillText('bir hikaye başladı.', W/2+1, 147);
+    ctx.fillStyle='#fdf1e0';
+    ctx.fillText('Ve o gün, Kupa Kafe\'de', W/2, 120);
+    ctx.fillText('bir hikaye başladı.', W/2, 146);
+    ctx.font='11px monospace';
+    ctx.fillStyle='#ffcf5c';
+    ctx.fillText('4 Ekim 2025 · Dodo & Çido', W/2, 180);
+    const blink = Math.floor(this.t*2)%2===0;
+    if(blink){
+      ctx.font='10px monospace'; ctx.fillStyle='#fdf1e0';
+      ctx.fillText('Baştan oynamak için A / Enter', W/2, H-30);
+    }
+    ctx.textAlign='left';
+  },
+  onAction(){ goTo(0); }
+});
+
+// ================= MAIN LOOP =================
+let lastTime = performance.now();
+function frame(now){
+  const dt = Math.min(0.05,(now-lastTime)/1000);
+  lastTime = now;
+
+  if(current && current.update) current.update(dt);
+  updateDialogue(dt);
+  updateChat(dt);
+
+  ctx.clearRect(0,0,W,H);
+  if(current && current.render) current.render();
+  drawDialogueBox();
+  if(chat){ /* chat draws itself via its own render call inside step */ }
+
+  requestAnimationFrame(frame);
+}
+
+goTo(0);
+requestAnimationFrame(frame);
+
+})();
+</script>
