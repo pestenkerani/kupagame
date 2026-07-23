@@ -1,4 +1,6 @@
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
   :root{
     --bg-deep:#1a1025;
@@ -171,8 +173,12 @@
   }
   #hint b{ color:var(--gold); font-weight:normal; }
   @media (max-width:420px){
+    html,body{ padding:10px 6px; }
+    #stage{ max-width:100%; gap:10px; }
+    #console{ padding:10px 10px 14px; border-radius:16px; }
     #dpad{ grid-template-columns:repeat(3,30px); grid-template-rows:repeat(3,30px);}
     #a-btn{ width:50px;height:50px; }
+    #hint{ font-size:9px; }
   }
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; }
